@@ -1,0 +1,62 @@
+name: Terraform Plan and Apply
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/terraform-plan-and-apply.yaml
+      - terraform/**
+  pull_request:
+    paths:
+      - .github/workflows/terraform-plan-and-apply.yaml
+      - terraform/**
+
+concurrency: terraform-plan-and-apply
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform-plan-and-apply:
+    name: Terraform Plan and Apply
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    env:
+      ARM_USE_OIDC: true
+      ARM_USE_AZUREAD: true
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      TF_CLI_ARGS_init: ${{ secrets.TF_CLI_ARGS_init }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -input=false -out=tfplan
+
+      - name: Add plan to summary
+        run: |
+          echo '```terraform' >> $GITHUB_STEP_SUMMARY
+          terraform-bin show -no-color tfplan >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Terraform Apply
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          echo '```terraform' >> $GITHUB_STEP_SUMMARY
+          terraform apply tfplan >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
