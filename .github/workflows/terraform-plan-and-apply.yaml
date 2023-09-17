@@ -57,6 +57,4 @@ jobs:
       - name: Terraform Apply
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
-          echo '```terraform' >> $GITHUB_STEP_SUMMARY
-          terraform apply tfplan >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          terraform apply tfplan
