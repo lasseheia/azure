@@ -49,3 +49,8 @@ resource "azurerm_dns_zone" "heia_consulting_com" {
   name                = "heiaconsulting.com"
   resource_group_name = azurerm_resource_group.dns_zones.name
 }
+
+resource "azurerm_dns_zone" "heia_consulting" {
+  name                = "heia.consulting"
+  resource_group_name = azurerm_resource_group.dns_zones.name
+}
